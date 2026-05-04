@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POS Rápido - Kiosco</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Navbar / Sidebar -->
+    <nav class="navbar">
+        <div class="nav-brand">POS Rápido</div>
+        <ul class="nav-links">
+            <li><button class="nav-btn active" data-target="seccion-venta">🛒 Venta</button></li>
+            <li><button class="nav-btn" data-target="seccion-stock">📦 Stock</button></li>
+            <li><button class="nav-btn" data-target="seccion-historial">🕒 Historial</button></li>
+            <li><button class="nav-btn" data-target="seccion-caja">💵 Caja</button></li>
+            <li><button class="nav-btn" data-target="seccion-config">⚙️ Configuración</button></li>
+        </ul>
+        <div class="nav-status">
+            <span id="sync-status-indicator" class="status-dot green"></span>
+            <span id="sync-status-text">Sincronizado</span>
+            <button id="btn-force-sync" title="Forzar Sincronización">🔄</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+
+        <!-- SECCIÓN: VENTA RÁPIDA -->
+        <section id="seccion-venta" class="seccion active">
+            <div class="venta-layout">
+                <!-- Izquierda: Catálogo -->
+                <div class="venta-catalogo">
+                    <div class="search-bar-container">
+                        <input type="text" id="input-buscar-producto"
+                            placeholder="Buscar por nombre o código de barras..." autofocus autocomplete="off">
+                    </div>
+                    <div class="categorias-chips" id="categorias-chips">
+                        <!-- Categorías renderizadas por JS -->
+                    </div>
+                    <div class="productos-grid" id="productos-grid">
+                        <!-- Productos renderizados por JS -->
+                    </div>
+                </div>
+
+                <!-- Derecha: Carrito -->
+                <div class="venta-carrito">
+                    <h2 class="carrito-title">Venta Actual</h2>
+                    <div class="carrito-items" id="carrito-items">
+                        <!-- Items del carrito renderizados por JS -->
+                    </div>
+                    <div class="carrito-resumen">
+                        <div class="resumen-fila">
+                            <span>Subtotal:</span>
+                            <span id="carrito-subtotal">$0.00</span>
+                        </div>
+                        <div class="resumen-fila total-grande">
+                            <span>Total:</span>
+                            <span id="carrito-total">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="carrito-acciones">
+                        <p class="medios-pago-title">Cobrar con:</p>
+                        <div class="botones-pago" id="botones-pago">
+                            <!-- Botones de pago renderizados por JS -->
+                        </div>
+                        <div class="botones-secundarios">
+                            <button class="btn-cancelar" id="btn-cancelar-venta">Cancelar Venta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: STOCK / PRODUCTOS -->
+        <section id="seccion-stock" class="seccion hidden">
+            <div class="seccion-header">
+                <h2>Catálogo y Stock Local</h2>
+                <div class="header-actions">
+                    <input type="text" id="input-buscar-stock" placeholder="Buscar producto...">
+                    <button class="btn-accion" id="btn-refresh-catalog">⬇️ Descargar Catálogo</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock Disponible</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-stock-body">
+                        <!-- Filas de stock renderizadas por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: HISTORIAL DE VENTAS -->
+        <section id="seccion-historial" class="seccion hidden">
+            <div class="seccion-header">
+                <h2>Historial de Ventas Locales</h2>
+                <button class="btn-accion" id="btn-refresh-historial">🔄 Refrescar Vista</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID Venta</th>
+                            <th>Fecha/Hora</th>
+                            <th>Artículos</th>
+                            <th>Total</th>
+                            <th>Medio de Pago</th>
+                            <th>Estado Sync</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historial-body">
+                        <!-- Filas de historial renderizadas por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CAJA -->
+        <section id="seccion-caja" class="seccion hidden">
+
+            <div class="seccion-header">
+                <h2>Control de Caja</h2>
+            </div>
+
+            <div class="caja-layout">
+
+                <div class="caja-cards">
+
+                    <div class="caja-card">
+                        <h3>Total Ventas</h3>
+                        <p class="caja-monto" id="caja-total-ventas">$0.00</p>
+                    </div>
+
+                    <div class="caja-card" id="caja-medios-container">
+                        <!-- Resumen por medios de pago -->
+                    </div>
+
+                    <div class="caja-card">
+                        <h3>Movimientos Manuales</h3>
+
+                        <div class="caja-form">
+                            <input type="number" id="input-caja-monto" placeholder="Monto ($)" min="0.01" step="0.01">
+                            <input type="text" id="input-caja-motivo" placeholder="Motivo (ej: Pago proveedor)">
+
+                            <div class="caja-botones">
+                                <button class="btn-ingreso" id="btn-caja-ingreso">Ingreso</button>
+                                <button class="btn-egreso" id="btn-caja-egreso">Egreso</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="caja-historial mt-20">
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>Movimientos de Caja</h3>
+                        <button onclick="toggleFiltroHoy()">Hoy</button>
+                    </div>
+
+                    <div style="font-size: 20px; margin-bottom: 10px;">
+                        Saldo Caja: <strong id="caja-saldo">$0</strong>
+                    </div>
+
+                    <div class="table-container mt-10">
+                        <table class="data-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Fecha/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Motivo</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tabla-caja-body">
+                                <!-- dinámico -->
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN: CONFIGURACIÓN -->
+        <section id="seccion-config" class="seccion hidden">
+            <div class="seccion-header">
+                <h2>Configuración del Terminal</h2>
+            </div>
+            <div class="config-container">
+                <div class="config-card">
+                    <div class="form-group">
+                        <label for="config-sucursal">ID Sucursal</label>
+                        <input type="text" id="config-sucursal" placeholder="Ej: SUC-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="config-usuario">ID Usuario / Cajero</label>
+                        <input type="text" id="config-usuario" placeholder="Ej: USR-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="config-api-url">URL de Google Apps Script</label>
+                        <input type="text" id="config-api-url"
+                            placeholder="https://script.google.com/macros/s/.../exec">
+                        <small>El sistema requiere recargar la página tras cambiar la URL.</small>
+                    </div>
+                    <button class="btn-accion mt-10" id="btn-guardar-config">Guardar Configuración</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
