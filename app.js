@@ -397,30 +397,36 @@ function setCategoria(id) {
 }
 
 function renderProductos() {
+
     const grid = document.getElementById('productos-grid');
     if (!grid) return;
+
     grid.innerHTML = '';
+
+    // 🔥 MOBILE: aseguramos clase grid
+    grid.className = 'productos-grid';
 
     const filtrados = state.productos.filter(p => {
         if (!p) return false;
 
-        // Filtro de Activo
         if (p.Activo === false || String(p.Activo).toUpperCase() === "FALSE") return false;
 
-        // Filtro de Categoría
         const matchCat = state.categoriaSeleccionada === 'all' ||
-            p.IDCategoria == state.categoriaSeleccionada ||
-            p.ID == state.categoriaSeleccionada;
+            String(p.IDCategoria) === String(state.categoriaSeleccionada) ||
+            String(p.ID) === String(state.categoriaSeleccionada);
 
-        // Filtro de Búsqueda
         const nombre = (p.NombreProducto || p.Producto || "").toString().toLowerCase();
         const codigo = (p.CodigoBarra || p.CodigoBarras || "").toString();
-        const matchSearch = nombre.includes(state.busquedaActual) || codigo.includes(state.busquedaActual);
+
+        const matchSearch =
+            nombre.includes(state.busquedaActual) ||
+            codigo.includes(state.busquedaActual);
 
         return matchCat && matchSearch;
     });
 
     filtrados.forEach(p => {
+
         const id = p.IDProducto || p.ID || '';
         const nombre = (p.NombreProducto || p.Producto || '').toString();
         const precio = Number(p.PrecioVenta || p.Precio || 0) || 0;
@@ -432,6 +438,7 @@ function renderProductos() {
         div.setAttribute('data-id', id);
 
         let stockClass = 'stock-ok';
+
         if (stockFinal <= 0) {
             stockClass = 'stock-critico';
             div.classList.add('disabled');
@@ -439,10 +446,11 @@ function renderProductos() {
             stockClass = 'stock-bajo';
         }
 
+        // 🔥 MOBILE: layout compacto
         div.innerHTML = `
             <div class="nombre">${nombre || 'Sin nombre'}</div>
-            <div class="precio">$${precio.toFixed(2)}</div>
-            <div class="stock-badge ${stockClass}">Stock: ${stockFinal}</div>
+            <div class="precio">$${precio.toFixed(0)}</div>
+            <div class="stock-badge ${stockClass}">${stockFinal}</div>
         `;
 
         div.onclick = () => {
@@ -453,7 +461,6 @@ function renderProductos() {
         grid.appendChild(div);
     });
 }
-
 function renderBotonesPago() {
     const container = document.getElementById('botones-pago');
     if (!container) return;
@@ -936,3 +943,13 @@ function toggleFiltroHoy() {
 
 
 
+function toggleMenu() {
+    const nav = document.querySelector('.navbar');
+    if (!nav) return;
+
+    if (nav.style.display === 'block') {
+        nav.style.display = 'none';
+    } else {
+        nav.style.display = 'block';
+    }
+}
